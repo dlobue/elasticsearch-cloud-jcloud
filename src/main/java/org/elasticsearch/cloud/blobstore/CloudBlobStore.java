@@ -20,11 +20,9 @@
 package org.elasticsearch.cloud.blobstore;
 
 import org.elasticsearch.ElasticSearchIllegalArgumentException;
-import org.elasticsearch.common.blobstore.AppendableBlobContainer;
 import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.BlobStore;
 import org.elasticsearch.common.blobstore.ImmutableBlobContainer;
-import org.elasticsearch.common.blobstore.support.ImmutableAppendableBlobContainer;
 import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -109,10 +107,6 @@ public class CloudBlobStore extends AbstractComponent implements BlobStore {
 
     @Override public ImmutableBlobContainer immutableBlobContainer(BlobPath path) {
         return new CloudImmutableBlobContainer(path, this);
-    }
-
-    @Override public AppendableBlobContainer appendableBlobContainer(BlobPath path) {
-        return new ImmutableAppendableBlobContainer(immutableBlobContainer(path));
     }
 
     @Override public void delete(BlobPath path) {

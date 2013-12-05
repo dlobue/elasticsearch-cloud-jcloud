@@ -24,6 +24,7 @@ import org.elasticsearch.common.blobstore.BlobPath;
 import org.elasticsearch.common.blobstore.ImmutableBlobContainer;
 import org.elasticsearch.common.blobstore.support.BlobStores;
 import org.jclouds.blobstore.domain.Blob;
+import org.jclouds.blobstore.domain.BlobBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,10 +40,11 @@ public class CloudImmutableBlobContainer extends AbstractCloudBlobContainer impl
     }
 
     @Override public void writeBlob(String blobName, InputStream is, long sizeInBytes, final WriterListener listener) {
-        Blob blob = cloudBlobStore.async().newBlob(buildBlobPath(blobName));
-        blob.setPayload(is);
-        blob.setContentLength(sizeInBytes);
-        final ListenableFuture<String> future = cloudBlobStore.async().putBlob(cloudBlobStore.container(), blob);
+        BlobBuilder blob = cloudBlobStore.async()
+                .blobBuilder(buildBlobPath(blobName))
+                .payload(is)
+                .contentLength(sizeInBytes);
+        final ListenableFuture<String> future = cloudBlobStore.async().putBlob(cloudBlobStore.container(), blob.build());
         future.addListener(new Runnable() {
             @Override public void run() {
                 try {

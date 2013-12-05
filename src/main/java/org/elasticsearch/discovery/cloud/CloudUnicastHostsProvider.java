@@ -19,6 +19,7 @@
 
 package org.elasticsearch.discovery.cloud;
 
+import org.elasticsearch.Version;
 import org.elasticsearch.cloud.compute.CloudComputeService;
 import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.common.component.AbstractComponent;
@@ -29,7 +30,7 @@ import org.elasticsearch.discovery.zen.ping.unicast.UnicastHostsProvider;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.compute.domain.NodeState;
+import org.jclouds.compute.domain.NodeMetadata.Status;
 import org.jclouds.domain.Location;
 
 import java.util.List;
@@ -77,8 +78,9 @@ public class CloudUnicastHostsProvider extends AbstractComponent implements Unic
             } else {
                 nodeMetadata = computeService.getNodeMetadata(node.getId());
             }
-            if (tag != null && !nodeMetadata.getTag().equals(tag)) {
-                logger.trace("Filtering node {} with unmatched tag {}", nodeMetadata.getName(), nodeMetadata.getTag());
+            // XXX make api hasn't changed
+            if (tag != null && !nodeMetadata.getTags().equals(tag)) {
+                logger.trace("Filtering node {} with unmatched tag {}", nodeMetadata.getName(), nodeMetadata.getTags());
                 continue;
             }
             boolean filteredByLocation = true;
@@ -100,11 +102,11 @@ public class CloudUnicastHostsProvider extends AbstractComponent implements Unic
                 logger.trace("Filtering node {} with unmatched location {}", nodeMetadata.getName(), nodeMetadata.getLocation());
                 continue;
             }
-            if (nodeMetadata.getState() == NodeState.PENDING || nodeMetadata.getState() == NodeState.RUNNING) {
+            if (nodeMetadata.getStatus() == Status.PENDING || nodeMetadata.getStatus() == Status.RUNNING) {
                 logger.debug("Adding {}, addresses {}", nodeMetadata.getName(), nodeMetadata.getPrivateAddresses());
                 for (String inetAddress : nodeMetadata.getPrivateAddresses()) {
                     for (int port : new PortsRange(ports).ports()) {
-                        discoNodes.add(new DiscoveryNode("#cloud-" + inetAddress + "-" + port, new InetSocketTransportAddress(inetAddress, port)));
+                        discoNodes.add(new DiscoveryNode("#cloud-" + inetAddress + "-" + port, new InetSocketTransportAddress(inetAddress, port), Version.CURRENT));
                     }
                 }
             }

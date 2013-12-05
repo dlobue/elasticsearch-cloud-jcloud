@@ -27,8 +27,8 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.SettingsFilter;
+import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.blobstore.BlobStoreContextFactory;
 
 import java.io.IOException;
 
@@ -61,7 +61,9 @@ public class CloudBlobStoreService extends AbstractLifecycleComponent<CloudBlobS
         String key = componentSettings.get("key", settings.get("cloud.key"));
 
         if (type != null) {
-            blobStoreContext = new BlobStoreContextFactory().createContext(type, account, key, JCloudsUtils.buildModules(settings));
+            blobStoreContext = ContextBuilder.newBuilder(type).credentials(account, key)
+                    .modules(JCloudsUtils.buildModules(settings))
+                    .buildView(BlobStoreContext.class);
             logger.info("Connected to {}/{} blob store service", type, account);
         } else {
             blobStoreContext = null;

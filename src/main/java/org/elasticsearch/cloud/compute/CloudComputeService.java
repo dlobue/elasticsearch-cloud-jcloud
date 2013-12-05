@@ -27,8 +27,8 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.SettingsFilter;
+import org.jclouds.ContextBuilder;
 import org.jclouds.compute.ComputeServiceContext;
-import org.jclouds.compute.ComputeServiceContextFactory;
 
 import java.io.IOException;
 
@@ -61,7 +61,8 @@ public class CloudComputeService extends AbstractLifecycleComponent<CloudCompute
         String key = componentSettings.get("key", settings.get("cloud.key"));
 
         if (type != null) {
-            computeServiceContext = new ComputeServiceContextFactory().createContext(type, account, key, JCloudsUtils.buildModules(settings));
+            computeServiceContext = ContextBuilder.newBuilder(type).credentials(account, key)
+                    .modules(JCloudsUtils.buildModules(settings)).buildView(ComputeServiceContext.class);
             logger.info("Connected to {}/{} compute service", type, account);
         } else {
             computeServiceContext = null;

@@ -78,7 +78,7 @@ public class AbstractCloudBlobContainer extends AbstractBlobContainer {
                     return;
                 }
                 byte[] buffer = new byte[cloudBlobStore.bufferSizeInBytes()];
-                InputStream is = blob.getContent();
+                InputStream is = blob.getPayload().getInput();
                 try {
                     int bytesRead;
                     while ((bytesRead = is.read(buffer)) != -1) {
@@ -113,7 +113,8 @@ public class AbstractCloudBlobContainer extends AbstractBlobContainer {
         ImmutableMap.Builder<String, BlobMetaData> blobs = ImmutableMap.builder();
         for (StorageMetadata storageMetadata : list) {
             String name = storageMetadata.getName().substring(cloudPath.length() + 1);
-            blobs.put(name, new PlainBlobMetaData(name, storageMetadata.getSize(), null));
+            //blobs.put(name, new PlainBlobMetaData(name, storageMetadata.getSize()));
+            blobs.put(name, new PlainBlobMetaData(name, cloudBlobStore.sync().blobMetadata(cloudPath, name).getContentMetadata().getContentLength()));
         }
         return blobs.build();
     }
