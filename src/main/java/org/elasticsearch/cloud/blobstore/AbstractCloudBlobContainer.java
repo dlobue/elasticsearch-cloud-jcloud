@@ -26,10 +26,13 @@ import org.elasticsearch.common.blobstore.BlobStoreException;
 import org.elasticsearch.common.blobstore.support.AbstractBlobContainer;
 import org.elasticsearch.common.blobstore.support.PlainBlobMetaData;
 import org.elasticsearch.common.collect.ImmutableMap;
+import org.elasticsearch.common.logging.Loggers;
 import org.jclouds.blobstore.domain.Blob;
+import org.jclouds.blobstore.domain.BlobMetadata;
 import org.jclouds.blobstore.domain.PageSet;
 import org.jclouds.blobstore.domain.StorageMetadata;
 import org.jclouds.blobstore.options.ListContainerOptions;
+import org.jclouds.io.ContentMetadata;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -114,7 +117,12 @@ public class AbstractCloudBlobContainer extends AbstractBlobContainer {
         for (StorageMetadata storageMetadata : list) {
             String name = storageMetadata.getName().substring(cloudPath.length() + 1);
             //blobs.put(name, new PlainBlobMetaData(name, storageMetadata.getSize()));
-            blobs.put(name, new PlainBlobMetaData(name, cloudBlobStore.sync().blobMetadata(cloudPath, name).getContentMetadata().getContentLength()));
+            Loggers.getLogger(getClass()).info(name + ": " + storageMetadata.getUserMetadata().toString());
+            //storageMetadata.getUserMetadata();
+            BlobMetadata blobmetadata = cloudBlobStore.sync().blobMetadata(cloudBlobStore.container(), storageMetadata.getName());
+            ContentMetadata contentmetadata = blobmetadata.getContentMetadata();
+            Long size = contentmetadata.getContentLength();
+            blobs.put(name, new PlainBlobMetaData(name, size));
         }
         return blobs.build();
     }
